@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { classes } from "@/data/curriculum";
-import { useProfile } from "@/contexts/ProfileContext";
+import { useUserProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,47 +27,66 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Settings, User, BookOpen, GraduationCap, ArrowLeft, Save, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-  const { profile, setProfile } = useProfile();
+  const { profile, updateProfile, deleteProfile, isLoading } = useUserProfile();
+  const { signOut } = useAuth();
   
-  const [firstName, setFirstName] = useState(profile?.firstName || "");
-  const [lastName, setLastName] = useState(profile?.lastName || "");
-  const [selectedClass, setSelectedClass] = useState(profile?.classId || "");
-  const [selectedSemester, setSelectedSemester] = useState(profile?.semesterId || "");
+  const [firstName, setFirstName] = useState(profile?.first_name || "");
+  const [lastName, setLastName] = useState(profile?.last_name || "");
+  const [selectedClass, setSelectedClass] = useState(profile?.class_id || "");
+  const [selectedSemester, setSelectedSemester] = useState(profile?.semester_id || "");
+  const [isSaving, setIsSaving] = useState(false);
 
   const selectedClassData = classes.find(c => c.id === selectedClass);
   const availableSemesters = selectedClassData?.semesters || [];
 
   const isFormValid = firstName.trim() && lastName.trim() && selectedClass && selectedSemester;
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!isFormValid || !profile) return;
+    setIsSaving(true);
 
-    setProfile({
-      ...profile,
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      classId: selectedClass,
-      semesterId: selectedSemester,
+    const { error } = await updateProfile({
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
+      class_id: selectedClass,
+      semester_id: selectedSemester,
     });
 
-    navigate("/");
+    setIsSaving(false);
+
+    if (error) {
+      toast.error("Erreur lors de la mise à jour du profil");
+    } else {
+      toast.success("Profil mis à jour !");
+      navigate("/");
+    }
   };
 
-  const handleDeleteProfile = () => {
-    setProfile(null);
-    // Clear all saved grades
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith("moyennecalc_")) {
-        localStorage.removeItem(key);
-      }
-    });
-    navigate("/setup");
+  const handleDeleteProfile = async () => {
+    const { error } = await deleteProfile();
+    
+    if (error) {
+      toast.error("Erreur lors de la suppression");
+    } else {
+      await signOut();
+      toast.success("Compte supprimé");
+      navigate("/auth");
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Chargement...</div>
+      </div>
+    );
+  }
 
   if (!profile) {
     navigate("/setup");
@@ -178,10 +198,10 @@ const SettingsPage = () => {
               <Button 
                 type="submit" 
                 className="w-full"
-                disabled={!isFormValid}
+                disabled={!isFormValid || isSaving}
               >
                 <Save className="w-4 h-4 mr-2" />
-                Enregistrer les modifications
+                {isSaving ? "Enregistrement..." : "Enregistrer les modifications"}
               </Button>
             </form>
           </CardContent>

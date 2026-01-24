@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { classes, StudentProfile } from "@/data/curriculum";
-import { useProfile } from "@/contexts/ProfileContext";
+import { useUserProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,38 +15,60 @@ import {
 } from "@/components/ui/select";
 import { GraduationCap, User, BookOpen, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
-  const { setProfile } = useProfile();
+  const { profile, isLoading, createProfile } = useUserProfile();
   
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Redirect if already has profile
+  useEffect(() => {
+    if (!isLoading && profile) {
+      navigate("/");
+    }
+  }, [isLoading, profile, navigate]);
 
   const selectedClassData = classes.find(c => c.id === selectedClass);
   const availableSemesters = selectedClassData?.semesters || [];
 
   const isFormValid = firstName.trim() && lastName.trim() && selectedClass && selectedSemester;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!isFormValid) return;
+    setIsSubmitting(true);
 
-    const profile: StudentProfile = {
-      id: crypto.randomUUID(),
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      classId: selectedClass,
-      semesterId: selectedSemester,
-      createdAt: new Date().toISOString(),
-    };
+    const { error } = await createProfile({
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
+      class_id: selectedClass,
+      semester_id: selectedSemester,
+    });
 
-    setProfile(profile);
-    navigate("/");
+    setIsSubmitting(false);
+
+    if (error) {
+      toast.error("Erreur lors de la création du profil");
+    } else {
+      toast.success("Profil créé avec succès !");
+      navigate("/");
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Chargement...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -148,10 +170,10 @@ const ProfileSetup = () => {
               <Button 
                 type="submit" 
                 className="w-full group"
-                disabled={!isFormValid}
+                disabled={!isFormValid || isSubmitting}
                 size="lg"
               >
-                Commencer
+                {isSubmitting ? "Création..." : "Commencer"}
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </form>
