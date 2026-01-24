@@ -1,15 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 interface GradeInputProps {
   value?: number;
   onChange: (value: number | undefined) => void;
+  max?: number;
   className?: string;
 }
 
-const GradeInput = ({ value, onChange, className }: GradeInputProps) => {
+const GradeInput = ({ value, onChange, max = 20, className }: GradeInputProps) => {
   const [inputValue, setInputValue] = useState(value?.toString() || "");
+
+  useEffect(() => {
+    setInputValue(value?.toString() || "");
+  }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -21,16 +26,17 @@ const GradeInput = ({ value, onChange, className }: GradeInputProps) => {
     }
     
     const numVal = parseFloat(val.replace(",", "."));
-    if (!isNaN(numVal) && numVal >= 0 && numVal <= 20) {
+    if (!isNaN(numVal) && numVal >= 0 && numVal <= max) {
       onChange(numVal);
     }
   };
 
   const getGradeColor = () => {
     if (value === undefined) return "";
-    if (value >= 16) return "border-success focus:ring-success/30";
-    if (value >= 12) return "border-primary focus:ring-primary/30";
-    if (value >= 10) return "border-warning focus:ring-warning/30";
+    const percentage = (value / max) * 100;
+    if (percentage >= 80) return "border-success focus:ring-success/30";
+    if (percentage >= 60) return "border-primary focus:ring-primary/30";
+    if (percentage >= 50) return "border-warning focus:ring-warning/30";
     return "border-destructive focus:ring-destructive/30";
   };
 

@@ -1,5 +1,5 @@
-import { UE, getColorClass, getColorBorderClass, getColorBgClass } from "@/data/curriculum";
-import SubjectRow from "./SubjectRow";
+import { UE, getColorClass, getColorBorderClass, getColorBgClass, calculateUEAverage } from "@/data/curriculum";
+import SubjectCard from "./SubjectCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -7,25 +7,24 @@ import { BookOpen, TrendingUp } from "lucide-react";
 
 interface UECardProps {
   ue: UE;
-  onSubjectGradeChange: (subjectId: string, grade: number | undefined) => void;
+  onEvaluationGradeChange: (subjectId: string, evaluationId: string, grade: number | undefined) => void;
 }
 
-const UECard = ({ ue, onSubjectGradeChange }: UECardProps) => {
-  const calculateAverage = (): number | null => {
-    const gradedSubjects = ue.subjects.filter(s => s.grade !== undefined);
-    if (gradedSubjects.length === 0) return null;
-    
-    const totalWeighted = gradedSubjects.reduce(
-      (sum, s) => sum + (s.grade! * s.coefficient),
+const UECard = ({ ue, onEvaluationGradeChange }: UECardProps) => {
+  const average = calculateUEAverage(ue);
+  
+  const getTotalEvaluations = () => {
+    return ue.subjects.reduce((sum, s) => sum + s.evaluations.length, 0);
+  };
+  
+  const getGradedEvaluations = () => {
+    return ue.subjects.reduce(
+      (sum, s) => sum + s.evaluations.filter(e => e.grade !== undefined).length, 
       0
     );
-    const totalCoef = gradedSubjects.reduce((sum, s) => sum + s.coefficient, 0);
-    
-    return totalWeighted / totalCoef;
   };
-
-  const average = calculateAverage();
-  const progress = ue.subjects.filter(s => s.grade !== undefined).length / ue.subjects.length;
+  
+  const progress = getTotalEvaluations() > 0 ? getGradedEvaluations() / getTotalEvaluations() : 0;
 
   const getAverageColor = (avg: number | null) => {
     if (avg === null) return "text-muted-foreground";
@@ -33,6 +32,10 @@ const UECard = ({ ue, onSubjectGradeChange }: UECardProps) => {
     if (avg >= 12) return "text-primary";
     if (avg >= 10) return "text-warning";
     return "text-destructive";
+  };
+
+  const getTotalPoints = () => {
+    return ue.subjects.reduce((sum, s) => sum + s.totalPoints, 0);
   };
 
   return (
@@ -53,7 +56,7 @@ const UECard = ({ ue, onSubjectGradeChange }: UECardProps) => {
                 {ue.code}
               </Badge>
               <Badge variant="outline" className="font-mono text-xs">
-                {ue.credits} ECTS
+                {getTotalPoints()} pts
               </Badge>
             </div>
             <CardTitle className="text-xl font-display">{ue.name}</CardTitle>
@@ -79,7 +82,7 @@ const UECard = ({ ue, onSubjectGradeChange }: UECardProps) => {
           <div className="flex justify-between text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <BookOpen className="w-3 h-3" />
-              {ue.subjects.filter(s => s.grade !== undefined).length}/{ue.subjects.length} notes
+              {getGradedEvaluations()}/{getTotalEvaluations()} notes
             </span>
             <span>{Math.round(progress * 100)}%</span>
           </div>
@@ -95,12 +98,15 @@ const UECard = ({ ue, onSubjectGradeChange }: UECardProps) => {
         </div>
       </CardHeader>
       
-      <CardContent className="pt-2 pb-4 space-y-1">
+      <CardContent className="pt-4 pb-4 space-y-3">
         {ue.subjects.map((subject) => (
-          <SubjectRow
+          <SubjectCard
             key={subject.id}
             subject={subject}
-            onGradeChange={(grade) => onSubjectGradeChange(subject.id, grade)}
+            color={ue.color}
+            onEvaluationGradeChange={(evaluationId, grade) => 
+              onEvaluationGradeChange(subject.id, evaluationId, grade)
+            }
             colorClass={getColorClass(ue.color)}
           />
         ))}

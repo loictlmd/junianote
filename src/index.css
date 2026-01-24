@@ -36,6 +36,15 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    --purple: 271 81% 56%;
+    --purple-foreground: 0 0% 100%;
+
+    --cyan: 187 85% 43%;
+    --cyan-foreground: 0 0% 100%;
+
     --border: 214 32% 91%;
     --input: 214 32% 91%;
     --ring: 221 83% 53%;
