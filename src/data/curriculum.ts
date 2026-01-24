@@ -5,7 +5,7 @@ export interface Evaluation {
   id: string;
   name: string;
   coefficient: number;
-  grade?: number;
+  grade?: number; // Note sur 20
   maxPoints: number;
 }
 
@@ -327,50 +327,51 @@ export const getColorBgClass = (color: string): string => {
   return colorMap[color] || colorMap.primary;
 };
 
-// Calcul des moyennes
+// Calcul des moyennes - Notes sur 20, pondérées par les coefficients
 export const calculateSubjectAverage = (subject: Subject): number | null => {
   const evaluationsWithGrades = subject.evaluations.filter((e) => e.grade !== undefined);
   if (evaluationsWithGrades.length === 0) return null;
 
-  const totalObtained = evaluationsWithGrades.reduce((sum, e) => sum + (e.grade || 0), 0);
-  const totalMax = evaluationsWithGrades.reduce((sum, e) => sum + e.maxPoints, 0);
+  // Chaque note est sur 20, pondérée par le coefficient (maxPoints)
+  const weightedSum = evaluationsWithGrades.reduce((sum, e) => sum + (e.grade || 0) * e.maxPoints, 0);
+  const totalWeight = evaluationsWithGrades.reduce((sum, e) => sum + e.maxPoints, 0);
 
-  if (totalMax === 0) return null;
-  return (totalObtained / totalMax) * 20;
+  if (totalWeight === 0) return null;
+  return weightedSum / totalWeight;
 };
 
 export const calculateUEAverage = (ue: UE): number | null => {
-  let totalObtained = 0;
-  let totalMax = 0;
+  let weightedSum = 0;
+  let totalWeight = 0;
 
   for (const subject of ue.subjects) {
     for (const evaluation of subject.evaluations) {
       if (evaluation.grade !== undefined) {
-        totalObtained += evaluation.grade;
-        totalMax += evaluation.maxPoints;
+        weightedSum += evaluation.grade * evaluation.maxPoints;
+        totalWeight += evaluation.maxPoints;
       }
     }
   }
 
-  if (totalMax === 0) return null;
-  return (totalObtained / totalMax) * 20;
+  if (totalWeight === 0) return null;
+  return weightedSum / totalWeight;
 };
 
 export const calculateOverallAverage = (ues: UE[]): number | null => {
-  let totalObtained = 0;
-  let totalMax = 0;
+  let weightedSum = 0;
+  let totalWeight = 0;
 
   for (const ue of ues) {
     for (const subject of ue.subjects) {
       for (const evaluation of subject.evaluations) {
         if (evaluation.grade !== undefined) {
-          totalObtained += evaluation.grade;
-          totalMax += evaluation.maxPoints;
+          weightedSum += evaluation.grade * evaluation.maxPoints;
+          totalWeight += evaluation.maxPoints;
         }
       }
     }
   }
 
-  if (totalMax === 0) return null;
-  return (totalObtained / totalMax) * 20;
+  if (totalWeight === 0) return null;
+  return weightedSum / totalWeight;
 };

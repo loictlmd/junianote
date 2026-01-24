@@ -27,14 +27,14 @@ const EvaluationRow = ({ evaluation, onGradeChange, colorClass }: EvaluationRowP
       
       <div className="flex items-center gap-3">
         <Badge variant="outline" className="font-mono text-xs">
-          {evaluation.maxPoints} pts
+          coef. {evaluation.maxPoints}
         </Badge>
         <GradeInput
           value={evaluation.grade}
           onChange={onGradeChange}
-          max={evaluation.maxPoints}
+          max={20}
         />
-        <span className="text-muted-foreground text-xs w-12">/{evaluation.maxPoints}</span>
+        <span className="text-muted-foreground text-xs w-8">/20</span>
       </div>
     </div>
   );
