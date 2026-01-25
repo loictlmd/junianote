@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { classes } from "@/data/curriculum";
 import { useUserProfile } from "@/hooks/useProfile";
@@ -34,11 +34,23 @@ const SettingsPage = () => {
   const { profile, updateProfile, deleteProfile, isLoading } = useUserProfile();
   const { signOut } = useAuth();
   
-  const [firstName, setFirstName] = useState(profile?.first_name || "");
-  const [lastName, setLastName] = useState(profile?.last_name || "");
-  const [selectedClass, setSelectedClass] = useState(profile?.class_id || "");
-  const [selectedSemester, setSelectedSemester] = useState(profile?.semester_id || "");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [selectedClass, setSelectedClass] = useState("");
+  const [selectedSemester, setSelectedSemester] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize form with profile data when loaded
+  useEffect(() => {
+    if (profile && !isInitialized) {
+      setFirstName(profile.first_name || "");
+      setLastName(profile.last_name || "");
+      setSelectedClass(profile.class_id || "");
+      setSelectedSemester(profile.semester_id || "");
+      setIsInitialized(true);
+    }
+  }, [profile, isInitialized]);
 
   const selectedClassData = classes.find(c => c.id === selectedClass);
   const availableSemesters = selectedClassData?.semesters || [];

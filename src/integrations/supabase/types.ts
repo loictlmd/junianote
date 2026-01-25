@@ -14,6 +14,188 @@ export type Database = {
   }
   public: {
     Tables: {
+      curriculum_classes: {
+        Row: {
+          code: string
+          created_at: string
+          full_name: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          full_name: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      curriculum_evaluations: {
+        Row: {
+          coefficient: number
+          created_at: string
+          display_order: number
+          id: string
+          max_points: number
+          name: string
+          subject_id: string
+          updated_at: string
+        }
+        Insert: {
+          coefficient: number
+          created_at?: string
+          display_order?: number
+          id?: string
+          max_points: number
+          name: string
+          subject_id: string
+          updated_at?: string
+        }
+        Update: {
+          coefficient?: number
+          created_at?: string
+          display_order?: number
+          id?: string
+          max_points?: number
+          name?: string
+          subject_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_evaluations_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      curriculum_semesters: {
+        Row: {
+          class_id: string
+          code: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_semesters_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      curriculum_subjects: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          name: string
+          total_points: number
+          ue_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          name: string
+          total_points?: number
+          ue_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          name?: string
+          total_points?: number
+          ue_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_subjects_ue_id_fkey"
+            columns: ["ue_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_ues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      curriculum_ues: {
+        Row: {
+          code: string
+          color: string
+          created_at: string
+          display_order: number
+          id: string
+          name: string
+          semester_id: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          color?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          name: string
+          semester_id: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          color?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          name?: string
+          semester_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_ues_semester_id_fkey"
+            columns: ["semester_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_semesters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       grades: {
         Row: {
           created_at: string
@@ -74,15 +256,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -209,6 +418,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const

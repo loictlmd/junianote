@@ -55,9 +55,6 @@ const UECard = ({ ue, onEvaluationGradeChange }: UECardProps) => {
               <Badge className={cn(getColorClass(ue.color), "font-mono text-xs")}>
                 {ue.code}
               </Badge>
-              <Badge variant="outline" className="font-mono text-xs">
-                {getTotalPoints()} pts
-              </Badge>
             </div>
             <CardTitle className="text-xl font-display">{ue.name}</CardTitle>
           </div>
