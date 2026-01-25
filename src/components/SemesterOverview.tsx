@@ -1,7 +1,7 @@
 import { UE, calculateOverallAverage, calculateUEAverage } from "@/data/curriculum";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { GraduationCap, Award, Target, Sparkles } from "lucide-react";
+import { GraduationCap, Target, Sparkles } from "lucide-react";
 
 interface SemesterOverviewProps {
   ues: UE[];
@@ -99,17 +99,6 @@ const SemesterOverview = ({ ues }: SemesterOverviewProps) => {
               <div className="text-2xl font-bold font-display text-foreground">
                 {getValidatedUEs()}
                 <span className="text-muted-foreground text-lg">/{ues.length}</span>
-              </div>
-            </div>
-            
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
-                <Award className="w-4 h-4" />
-                <span className="text-xs">Points obtenus</span>
-              </div>
-              <div className="text-2xl font-bold font-display text-foreground">
-                {getObtainedPoints().toFixed(0)}
-                <span className="text-muted-foreground text-lg">/{getTotalPoints()}</span>
               </div>
             </div>
           </div>

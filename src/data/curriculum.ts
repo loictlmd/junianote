@@ -268,6 +268,24 @@ const hei341Semester6: Semester = {
 // Liste de toutes les classes disponibles
 export const classes: ClassData[] = [
   {
+    id: "hei311",
+    name: "HEI 311",
+    fullName: "HEI 3 - Groupe 11",
+    semesters: [hei341Semester6],
+  },
+  {
+    id: "hei321",
+    name: "HEI 321",
+    fullName: "HEI 3 - Groupe 21",
+    semesters: [hei341Semester6],
+  },
+  {
+    id: "hei331",
+    name: "HEI 331",
+    fullName: "HEI 3 - Groupe 31",
+    semesters: [hei341Semester6],
+  },
+  {
     id: "hei341",
     name: "HEI 341",
     fullName: "HEI 3 - Groupe 41",
