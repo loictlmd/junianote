@@ -59,7 +59,7 @@ const Header = ({ onReset, onSave, isSaving, hasUnsavedChanges }: HeaderProps) =
                 JUNIA Note
               </h1>
               <p className="text-sm text-muted-foreground">
-                Calculateur de moyennes
+                Calculer votre moyenne
               </p>
             </div>
           </Link>
