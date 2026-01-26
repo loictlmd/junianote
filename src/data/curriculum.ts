@@ -46,6 +46,225 @@ export interface StudentProfile {
   createdAt: string;
 }
 
+// Données pour HEI 341 - Semestre 5
+const hei341Semester5: Semester = {
+  id: "s5",
+  name: "Semestre 5",
+  ues: [
+    {
+      id: "ue1-cme-s5",
+      name: "CME",
+      code: "UE1",
+      color: "primary",
+      subjects: [
+        {
+          id: "cme2",
+          name: "Métaux, céramiques et composites",
+          totalPoints: 100,
+          evaluations: [
+            { id: "cme2-p1", name: "P1", coefficient: 30, maxPoints: 30 },
+            { id: "cme2-p2", name: "P2", coefficient: 30, maxPoints: 30 },
+            { id: "cme2-tp1", name: "TP1", coefficient: 12.5, maxPoints: 12.5 },
+            { id: "cme2-tp2", name: "TP2", coefficient: 12.5, maxPoints: 12.5 },
+            { id: "cme2-projet", name: "Projet", coefficient: 15, maxPoints: 15 },
+          ],
+        },
+      ],
+    },
+    {
+      id: "ue2-eea-s5",
+      name: "EEA",
+      code: "UE2",
+      color: "secondary",
+      subjects: [
+        {
+          id: "eea6",
+          name: "Transition énergétique",
+          totalPoints: 100,
+          evaluations: [
+            { id: "eea6-p1", name: "P1", coefficient: 60, maxPoints: 60 },
+            { id: "eea6-tp1", name: "TP1", coefficient: 15, maxPoints: 15 },
+            { id: "eea6-tp3", name: "TP3", coefficient: 15, maxPoints: 15 },
+            { id: "eea6-projet", name: "Projet", coefficient: 10, maxPoints: 10 },
+          ],
+        },
+      ],
+    },
+    {
+      id: "ue3-mfe-s5",
+      name: "MFE",
+      code: "UE3",
+      color: "accent",
+      subjects: [
+        {
+          id: "mfe1",
+          name: "Ingénierie Mécanique",
+          totalPoints: 100,
+          evaluations: [
+            { id: "mfe1-p1", name: "P1", coefficient: 50, maxPoints: 50 },
+            { id: "mfe1-tp1", name: "TP1", coefficient: 10, maxPoints: 10 },
+            { id: "mfe1-tp2", name: "TP2", coefficient: 10, maxPoints: 10 },
+            { id: "mfe1-projet", name: "Projet", coefficient: 30, maxPoints: 30 },
+          ],
+        },
+      ],
+    },
+    {
+      id: "ue4-ndc-s5",
+      name: "NDC",
+      code: "UE4",
+      color: "success",
+      subjects: [
+        {
+          id: "ndc1",
+          name: "Développement FrontEnd WEB",
+          totalPoints: 50,
+          evaluations: [
+            { id: "ndc1-p1", name: "P1", coefficient: 17.5, maxPoints: 17.5 },
+            { id: "ndc1-tp1", name: "TP1", coefficient: 7.5, maxPoints: 7.5 },
+            { id: "ndc1-tp2", name: "TP2", coefficient: 7.5, maxPoints: 7.5 },
+            { id: "ndc1-projet", name: "Projet", coefficient: 17.5, maxPoints: 17.5 },
+          ],
+        },
+        {
+          id: "ndc3",
+          name: "Objets Connectés",
+          totalPoints: 50,
+          evaluations: [
+            { id: "ndc3-p1", name: "P1", coefficient: 20, maxPoints: 20 },
+            { id: "ndc3-tp1", name: "TP1", coefficient: 10, maxPoints: 10 },
+            { id: "ndc3-tp2", name: "TP2", coefficient: 10, maxPoints: 10 },
+            { id: "ndc3-projet", name: "Projet", coefficient: 10, maxPoints: 10 },
+          ],
+        },
+      ],
+    },
+    {
+      id: "ue5-ome-s5",
+      name: "OME",
+      code: "UE5",
+      color: "warning",
+      subjects: [
+        {
+          id: "ome-transitions",
+          name: "Enjeux des transitions",
+          totalPoints: 60,
+          evaluations: [
+            { id: "ome-transitions-p1", name: "P1", coefficient: 30, maxPoints: 30 },
+            { id: "ome-transitions-cc1", name: "CC1", coefficient: 30, maxPoints: 30 },
+          ],
+        },
+        {
+          id: "ome-sst",
+          name: "Santé & Sécurité au Travail",
+          totalPoints: 20,
+          evaluations: [
+            { id: "ome-sst-cc1", name: "CC1", coefficient: 20, maxPoints: 20 },
+          ],
+        },
+        {
+          id: "ome-orga",
+          name: "Organisation de l'entreprise",
+          totalPoints: 20,
+          evaluations: [
+            { id: "ome-orga-p1", name: "P1", coefficient: 20, maxPoints: 20 },
+          ],
+        },
+      ],
+    },
+    {
+      id: "ue6-hl-s5",
+      name: "HL",
+      code: "UE6",
+      color: "info",
+      subjects: [
+        {
+          id: "hl-anglais-s5",
+          name: "Anglais",
+          totalPoints: 30,
+          evaluations: [
+            { id: "hl-anglais-s5-cc", name: "CC", coefficient: 30, maxPoints: 30 },
+          ],
+        },
+        {
+          id: "hl-lv2-s5",
+          name: "LV2 / FLE",
+          totalPoints: 20,
+          evaluations: [
+            { id: "hl-lv2-s5-cc", name: "CC", coefficient: 20, maxPoints: 20 },
+          ],
+        },
+        {
+          id: "hl-competences-s5",
+          name: "Compétences relationnelles 1",
+          totalPoints: 25,
+          evaluations: [
+            { id: "hl-competences-s5-cc", name: "CC", coefficient: 25, maxPoints: 25 },
+          ],
+        },
+        {
+          id: "hl-ethique",
+          name: "Introduction à l'éthique",
+          totalPoints: 25,
+          evaluations: [
+            { id: "hl-ethique-cc", name: "CC", coefficient: 25, maxPoints: 25 },
+          ],
+        },
+      ],
+    },
+    {
+      id: "ue7-ib-s5",
+      name: "International Break",
+      code: "UE7",
+      color: "purple",
+      subjects: [
+        {
+          id: "ib-s5",
+          name: "International Break",
+          totalPoints: 100,
+          evaluations: [
+            { id: "ib-s5-projet", name: "Projet", coefficient: 100, maxPoints: 100 },
+          ],
+        },
+      ],
+    },
+    {
+      id: "ue8-projet-s5",
+      name: "Projet",
+      code: "UE8",
+      color: "cyan",
+      subjects: [
+        {
+          id: "projet-management",
+          name: "Management de projet",
+          totalPoints: 35,
+          evaluations: [
+            { id: "projet-management-p1", name: "P1", coefficient: 20, maxPoints: 20 },
+            { id: "projet-management-cc", name: "CC", coefficient: 15, maxPoints: 15 },
+          ],
+        },
+        {
+          id: "projet-innovation",
+          name: "Innovation, créativité et Design Thinking",
+          totalPoints: 35,
+          evaluations: [
+            { id: "projet-innovation-p1", name: "P1", coefficient: 20, maxPoints: 20 },
+            { id: "projet-innovation-cc", name: "CC", coefficient: 15, maxPoints: 15 },
+          ],
+        },
+        {
+          id: "projet-piste",
+          name: "Projet Piste",
+          totalPoints: 30,
+          evaluations: [
+            { id: "projet-piste-projet", name: "Projet", coefficient: 30, maxPoints: 30 },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 // Données pour HEI 341 - Semestre 6
 const hei341Semester6: Semester = {
   id: "s6",
@@ -289,7 +508,7 @@ export const classes: ClassData[] = [
     id: "hei341",
     name: "HEI 341",
     fullName: "HEI 3 - Groupe 41",
-    semesters: [hei341Semester6],
+    semesters: [hei341Semester5, hei341Semester6],
   },
 ];
 
