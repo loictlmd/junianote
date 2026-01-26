@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { UE, getSemesterById } from "@/data/curriculum";
@@ -10,6 +10,8 @@ export const useGrades = (classId: string | undefined, semesterId: string | unde
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingGradesRef = useRef<UE[]>([]);
 
   // Load semester data with saved grades from database
   useEffect(() => {
@@ -54,6 +56,7 @@ export const useGrades = (classId: string | undefined, semesterId: string | unde
       }
 
       setUeData(clonedUEs);
+      pendingGradesRef.current = clonedUEs;
       setIsLoading(false);
       setHasUnsavedChanges(false);
     };
@@ -61,10 +64,93 @@ export const useGrades = (classId: string | undefined, semesterId: string | unde
     loadGrades();
   }, [classId, semesterId, user]);
 
+  // Auto-save function
+  const performAutoSave = useCallback(async (dataToSave: UE[]) => {
+    if (!user) return;
+
+    setIsSaving(true);
+
+    try {
+      // Collect all grades
+      const gradesToSave: { user_id: string; evaluation_id: string; grade: number }[] = [];
+      
+      dataToSave.forEach((ue) => {
+        ue.subjects.forEach((subject) => {
+          subject.evaluations.forEach((evaluation) => {
+            if (evaluation.grade !== undefined) {
+              gradesToSave.push({
+                user_id: user.id,
+                evaluation_id: evaluation.id,
+                grade: evaluation.grade,
+              });
+            }
+          });
+        });
+      });
+
+      // Delete existing grades for this user
+      await supabase.from("grades").delete().eq("user_id", user.id);
+
+      // Insert new grades
+      if (gradesToSave.length > 0) {
+        const { error } = await supabase.from("grades").insert(gradesToSave);
+        if (error) throw error;
+      }
+
+      setHasUnsavedChanges(false);
+    } catch (error) {
+      console.error("Error auto-saving grades:", error);
+      toast.error("Erreur lors de la sauvegarde automatique");
+    } finally {
+      setIsSaving(false);
+    }
+  }, [user]);
+
+  // Debounced auto-save effect
+  useEffect(() => {
+    if (hasUnsavedChanges && user) {
+      // Clear any existing timeout
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+
+      // Set a new timeout to save after 1 second of inactivity
+      saveTimeoutRef.current = setTimeout(() => {
+        performAutoSave(pendingGradesRef.current);
+      }, 1000);
+    }
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [hasUnsavedChanges, user, performAutoSave]);
+
+  // Save on unmount or page change
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (hasUnsavedChanges && user) {
+        // Perform synchronous save attempt
+        performAutoSave(pendingGradesRef.current);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Save any pending changes when component unmounts
+      if (hasUnsavedChanges && user && pendingGradesRef.current.length > 0) {
+        performAutoSave(pendingGradesRef.current);
+      }
+    };
+  }, [hasUnsavedChanges, user, performAutoSave]);
+
   const handleEvaluationGradeChange = useCallback(
     (ueId: string, subjectId: string, evaluationId: string, grade: number | undefined) => {
       setUeData((prev) => {
-        return prev.map((ue) => {
+        const newData = prev.map((ue) => {
           if (ue.id !== ueId) return ue;
           return {
             ...ue,
@@ -80,6 +166,8 @@ export const useGrades = (classId: string | undefined, semesterId: string | unde
             }),
           };
         });
+        pendingGradesRef.current = newData;
+        return newData;
       });
       setHasUnsavedChanges(true);
     },
@@ -90,6 +178,11 @@ export const useGrades = (classId: string | undefined, semesterId: string | unde
     if (!user) {
       toast.error("Vous devez être connecté pour sauvegarder");
       return;
+    }
+
+    // Clear any pending auto-save
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
 
     setIsSaving(true);
@@ -139,6 +232,7 @@ export const useGrades = (classId: string | undefined, semesterId: string | unde
 
     const clonedUEs: UE[] = JSON.parse(JSON.stringify(semester.ues));
     setUeData(clonedUEs);
+    pendingGradesRef.current = clonedUEs;
     setHasUnsavedChanges(true);
   }, [classId, semesterId]);
 
