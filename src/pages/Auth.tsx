@@ -94,8 +94,8 @@ const Auth = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-secondary shadow-soft mb-4">
             <GraduationCap className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-display font-bold gradient-text">MoyenneCalc</h1>
-          <p className="text-muted-foreground">Calculateur de moyennes pour étudiants JUNIA</p>
+          <h1 className="text-3xl font-display font-bold gradient-text">JUNIA Note</h1>
+          <p className="text-muted-foreground">Calculer votre moyenne</p>
         </div>
 
         {/* Auth Card */}
