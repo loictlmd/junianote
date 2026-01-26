@@ -1,9 +1,11 @@
-import { Calculator, RotateCcw, Settings, Save, LogOut } from "lucide-react";
+import { Calculator, RotateCcw, Settings, Save, LogOut, Moon, Sun, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAdmin } from "@/hooks/useAdmin";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
 interface HeaderProps {
   onReset: () => void;
@@ -14,7 +16,26 @@ interface HeaderProps {
 
 const Header = ({ onReset, onSave, isSaving, hasUnsavedChanges }: HeaderProps) => {
   const { signOut, user } = useAuth();
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const isDarkMode = document.documentElement.classList.contains("dark");
+    setIsDark(isDarkMode);
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newDark = !isDark;
+    setIsDark(newDark);
+    if (newDark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -35,10 +56,10 @@ const Header = ({ onReset, onSave, isSaving, hasUnsavedChanges }: HeaderProps) =
             </div>
             <div>
               <h1 className="text-2xl font-bold font-display gradient-text">
-                MoyenneCalc
+                JUNIA Note
               </h1>
               <p className="text-sm text-muted-foreground">
-                Calculateur de moyennes universitaires
+                Calculateur de moyennes
               </p>
             </div>
           </Link>
@@ -75,12 +96,34 @@ const Header = ({ onReset, onSave, isSaving, hasUnsavedChanges }: HeaderProps) =
             <Button
               variant="ghost"
               size="icon"
+              onClick={toggleDarkMode}
+              title={isDark ? "Mode clair" : "Mode sombre"}
+            >
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
               asChild
             >
               <Link to="/settings">
                 <Settings className="w-5 h-5" />
               </Link>
             </Button>
+
+            {isAdmin && (
+              <Button
+                variant="ghost"
+                size="icon"
+                asChild
+                title="Administration"
+              >
+                <Link to="/admin">
+                  <Shield className="w-5 h-5 text-primary" />
+                </Link>
+              </Button>
+            )}
 
             {user && (
               <Button

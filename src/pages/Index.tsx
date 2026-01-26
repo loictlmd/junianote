@@ -81,7 +81,7 @@ const Index = () => {
       
       <footer className="border-t border-border/50 mt-12 py-6">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>MoyenneCalc - Calculateur de moyennes pour étudiants JUNIA</p>
+          <p>JUNIA Note - Calculateur de moyennes pour étudiants JUNIA</p>
         </div>
       </footer>
     </div>
