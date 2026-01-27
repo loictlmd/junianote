@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { classes, StudentProfile } from "@/data/curriculum";
+import { useCurriculumData } from "@/hooks/useCurriculumData";
 import { useUserProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,11 +16,14 @@ import {
 import { GraduationCap, User, BookOpen, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import DisclaimerStep from "@/components/DisclaimerStep";
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
-  const { profile, isLoading, createProfile } = useUserProfile();
+  const { profile, isLoading: profileLoading, createProfile } = useUserProfile();
+  const { classes, getSemestersForClass, isLoading: curriculumLoading } = useCurriculumData();
   
+  const [step, setStep] = useState<"form" | "disclaimer">("form");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
@@ -29,19 +32,22 @@ const ProfileSetup = () => {
 
   // Redirect if already has profile
   useEffect(() => {
-    if (!isLoading && profile) {
+    if (!profileLoading && profile) {
       navigate("/");
     }
-  }, [isLoading, profile, navigate]);
+  }, [profileLoading, profile, navigate]);
 
-  const selectedClassData = classes.find(c => c.id === selectedClass);
-  const availableSemesters = selectedClassData?.semesters || [];
+  const availableSemesters = selectedClass ? getSemestersForClass(selectedClass) : [];
 
   const isFormValid = firstName.trim() && lastName.trim() && selectedClass && selectedSemester;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+    if (!isFormValid) return;
+    setStep("disclaimer");
+  };
+
+  const handleDisclaimerAccept = async () => {
     if (!isFormValid) return;
     setIsSubmitting(true);
 
@@ -62,6 +68,8 @@ const ProfileSetup = () => {
     }
   };
 
+  const isLoading = profileLoading || curriculumLoading;
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -79,110 +87,124 @@ const ProfileSetup = () => {
             <GraduationCap className="w-8 h-8 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-display font-bold gradient-text">JUNIA Note</h1>
-          <p className="text-muted-foreground">Configure ton profil pour commencer</p>
+          <p className="text-muted-foreground">
+            {step === "form" ? "Configure ton profil pour commencer" : "Dernière étape"}
+          </p>
         </div>
 
-        {/* Form Card */}
-        <Card className="border-2 border-primary/20 shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="w-5 h-5 text-primary" />
-              Création du profil
-            </CardTitle>
-            <CardDescription>
-              Ces informations nous permettent de personnaliser ton expérience
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Name fields */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">Prénom</Label>
-                  <Input
-                    id="firstName"
-                    placeholder="Ton prénom"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    maxLength={50}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Nom</Label>
-                  <Input
-                    id="lastName"
-                    placeholder="Ton nom"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    maxLength={50}
-                  />
-                </div>
-              </div>
+        {step === "form" ? (
+          <>
+            {/* Form Card */}
+            <Card className="border-2 border-primary/20 shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="w-5 h-5 text-primary" />
+                  Création du profil
+                </CardTitle>
+                <CardDescription>
+                  Ces informations nous permettent de personnaliser ton expérience
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleFormSubmit} className="space-y-6">
+                  {/* Name fields */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">Prénom</Label>
+                      <Input
+                        id="firstName"
+                        placeholder="Ton prénom"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        maxLength={50}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Nom</Label>
+                      <Input
+                        id="lastName"
+                        placeholder="Ton nom"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        maxLength={50}
+                      />
+                    </div>
+                  </div>
 
-              {/* Class selection */}
-              <div className="space-y-2">
-                <Label htmlFor="class" className="flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-primary" />
-                  Classe
-                </Label>
-                <Select value={selectedClass} onValueChange={(value) => {
-                  setSelectedClass(value);
-                  setSelectedSemester(""); // Reset semester when class changes
-                }}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionne ta classe" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {classes.map((classItem) => (
-                      <SelectItem key={classItem.id} value={classItem.id}>
-                        {classItem.name} - {classItem.fullName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  {/* Class selection */}
+                  <div className="space-y-2">
+                    <Label htmlFor="class" className="flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-primary" />
+                      Classe
+                    </Label>
+                    <Select value={selectedClass} onValueChange={(value) => {
+                      setSelectedClass(value);
+                      setSelectedSemester(""); // Reset semester when class changes
+                    }}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionne ta classe" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {classes.map((classItem) => (
+                          <SelectItem key={classItem.id} value={classItem.id}>
+                            {classItem.name} - {classItem.full_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              {/* Semester selection */}
-              <div className="space-y-2">
-                <Label htmlFor="semester" className="flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4 text-primary" />
-                  Semestre
-                </Label>
-                <Select 
-                  value={selectedSemester} 
-                  onValueChange={setSelectedSemester}
-                  disabled={!selectedClass}
-                >
-                  <SelectTrigger className={cn(!selectedClass && "opacity-50")}>
-                    <SelectValue placeholder={selectedClass ? "Sélectionne ton semestre" : "Choisis d'abord une classe"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableSemesters.map((semester) => (
-                      <SelectItem key={semester.id} value={semester.id}>
-                        {semester.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  {/* Semester selection */}
+                  <div className="space-y-2">
+                    <Label htmlFor="semester" className="flex items-center gap-2">
+                      <GraduationCap className="w-4 h-4 text-primary" />
+                      Semestre
+                    </Label>
+                    <Select 
+                      value={selectedSemester} 
+                      onValueChange={setSelectedSemester}
+                      disabled={!selectedClass}
+                    >
+                      <SelectTrigger className={cn(!selectedClass && "opacity-50")}>
+                        <SelectValue placeholder={selectedClass ? "Sélectionne ton semestre" : "Choisis d'abord une classe"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableSemesters.map((semester) => (
+                          <SelectItem key={semester.id} value={semester.id}>
+                            {semester.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              {/* Submit button */}
-              <Button 
-                type="submit" 
-                className="w-full group"
-                disabled={!isFormValid || isSubmitting}
-                size="lg"
-              >
-                {isSubmitting ? "Création..." : "Commencer"}
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+                  {/* Submit button */}
+                  <Button 
+                    type="submit" 
+                    className="w-full group"
+                    disabled={!isFormValid}
+                    size="lg"
+                  >
+                    Continuer
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
 
-        <p className="text-center text-xs text-muted-foreground">
-          Tu pourras modifier ces informations plus tard dans les paramètres
-        </p>
+            <p className="text-center text-xs text-muted-foreground">
+              Tu pourras modifier ces informations plus tard dans les paramètres
+            </p>
+          </>
+        ) : (
+          <DisclaimerStep onAccept={handleDisclaimerAccept} />
+        )}
+
+        {isSubmitting && (
+          <div className="text-center text-muted-foreground animate-pulse">
+            Création du profil...
+          </div>
+        )}
       </div>
     </div>
   );

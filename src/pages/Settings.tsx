@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { classes } from "@/data/curriculum";
+import { useCurriculumData } from "@/hooks/useCurriculumData";
 import { useUserProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -31,7 +31,8 @@ import { toast } from "sonner";
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-  const { profile, updateProfile, deleteProfile, isLoading } = useUserProfile();
+  const { profile, updateProfile, deleteProfile, isLoading: profileLoading } = useUserProfile();
+  const { classes, getSemestersForClass, isLoading: curriculumLoading } = useCurriculumData();
   const { signOut } = useAuth();
   
   const [firstName, setFirstName] = useState("");
@@ -52,10 +53,10 @@ const SettingsPage = () => {
     }
   }, [profile, isInitialized]);
 
-  const selectedClassData = classes.find(c => c.id === selectedClass);
-  const availableSemesters = selectedClassData?.semesters || [];
+  const availableSemesters = selectedClass ? getSemestersForClass(selectedClass) : [];
 
   const isFormValid = firstName.trim() && lastName.trim() && selectedClass && selectedSemester;
+  const isLoading = profileLoading || curriculumLoading;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,7 +176,7 @@ const SettingsPage = () => {
                   <SelectContent>
                     {classes.map((classItem) => (
                       <SelectItem key={classItem.id} value={classItem.id}>
-                        {classItem.name} - {classItem.fullName}
+                        {classItem.name} - {classItem.full_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
