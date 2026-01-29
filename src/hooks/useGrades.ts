@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { UE, getSemesterById } from "@/data/curriculum";
+import { UE } from "@/data/curriculum";
+import { useSemesterCurriculum } from "./useSemesterCurriculum";
 import { toast } from "sonner";
 
 export const useGrades = (classId: string | undefined, semesterId: string | undefined) => {
   const { user } = useAuth();
+  const { ues: curriculumUEs, isLoading: curriculumLoading, error: curriculumError } = useSemesterCurriculum(classId, semesterId);
+  
   const [ueData, setUeData] = useState<UE[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -13,22 +16,18 @@ export const useGrades = (classId: string | undefined, semesterId: string | unde
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pendingGradesRef = useRef<UE[]>([]);
 
-  // Load semester data with saved grades from database
+  // Load grades when curriculum is ready
   useEffect(() => {
     const loadGrades = async () => {
-      if (!classId || !semesterId) {
+      if (curriculumLoading) return;
+      
+      if (!classId || !semesterId || curriculumUEs.length === 0) {
         setIsLoading(false);
         return;
       }
 
-      const semester = getSemesterById(classId, semesterId);
-      if (!semester) {
-        setIsLoading(false);
-        return;
-      }
-
-      // Deep clone the semester UEs
-      const clonedUEs: UE[] = JSON.parse(JSON.stringify(semester.ues));
+      // Deep clone the curriculum UEs
+      const clonedUEs: UE[] = JSON.parse(JSON.stringify(curriculumUEs));
 
       if (user) {
         // Load grades from database
@@ -62,7 +61,7 @@ export const useGrades = (classId: string | undefined, semesterId: string | unde
     };
 
     loadGrades();
-  }, [classId, semesterId, user]);
+  }, [classId, semesterId, user, curriculumUEs, curriculumLoading]);
 
   // Auto-save function
   const performAutoSave = useCallback(async (dataToSave: UE[]) => {
@@ -225,22 +224,20 @@ export const useGrades = (classId: string | undefined, semesterId: string | unde
   }, [user, ueData]);
 
   const resetGrades = useCallback(async () => {
-    if (!classId || !semesterId) return;
+    if (!classId || !semesterId || curriculumUEs.length === 0) return;
 
-    const semester = getSemesterById(classId, semesterId);
-    if (!semester) return;
-
-    const clonedUEs: UE[] = JSON.parse(JSON.stringify(semester.ues));
+    const clonedUEs: UE[] = JSON.parse(JSON.stringify(curriculumUEs));
     setUeData(clonedUEs);
     pendingGradesRef.current = clonedUEs;
     setHasUnsavedChanges(true);
-  }, [classId, semesterId]);
+  }, [classId, semesterId, curriculumUEs]);
 
   return {
     ueData,
-    isLoading,
+    isLoading: isLoading || curriculumLoading,
     isSaving,
     hasUnsavedChanges,
+    curriculumError,
     handleEvaluationGradeChange,
     saveGrades,
     resetGrades,
